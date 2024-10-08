@@ -1,0 +1,21 @@
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanInput = new Scanner(System.in);
+        int number1 = scanInput.nextInt();
+        int number2 = scanInput.nextInt();
+        int gcd = findGreatestCommDiv(number1, number2);
+        System.out.println(gcd);
+        scanInput.close();
+    }
+
+    public static int findGreatestCommDiv(int number1, int number2) {
+        while (number2 != 0) {
+            int temporaryNum = number2;
+            number2 = number1 % number2;
+            number1 = temporaryNum;
+        }
+        return number1;
+    }
+}
