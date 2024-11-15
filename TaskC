@@ -4,48 +4,45 @@ import java.io.InputStreamReader;
 
 public class Main {
 
-    public static int[] calcPrefiFuncArr(String pattern) {
-        int[] prefArr = new int[pattern.length()];
-        int lenOfMatch = 0;
-
-        for (int i = 1; i < pattern.length(); i++) {
-            while (lenOfMatch > 0 && pattern.charAt(lenOfMatch) != pattern.charAt(i)) {
-                lenOfMatch = prefArr[lenOfMatch - 1];
-            }
-            if (pattern.charAt(lenOfMatch) == pattern.charAt(i)) {
-                lenOfMatch++;
-            }
-            prefArr[i] = lenOfMatch;
+    private static int helperMatchPref(String pattern, int[] prefArr, int lenOfMatch, char currentChar) {
+        while (lenOfMatch > 0 && pattern.charAt(lenOfMatch) != currentChar) {
+            lenOfMatch = prefArr[lenOfMatch - 1];
         }
-        return prefArr;
+        if (pattern.charAt(lenOfMatch) == currentChar) {
+            ++lenOfMatch;
+        }
+        return lenOfMatch;
     }
 
     public static void KMPMatchngAlg(String pattern, String text) {
-        int[] prefiFuncArr = calcPrefiFuncArr(pattern);
+        int[] prefArr = new int[pattern.length()];
         int lenOfMatch = 0;
 
-        for (int i = 0; i < text.length(); i++) {
-            while (lenOfMatch > 0 && pattern.charAt(lenOfMatch) != text.charAt(i)) {
-                lenOfMatch = prefiFuncArr[lenOfMatch - 1];
-            }
-            if (pattern.charAt(lenOfMatch) == text.charAt(i)) {
-                lenOfMatch++;
-            }
+        for (int i = 1; i < pattern.length(); ++i) {
+            lenOfMatch = helperMatchPref(pattern, prefArr, lenOfMatch, pattern.charAt(i));
+            prefArr[i] = lenOfMatch;
+        }
+
+        lenOfMatch = 0;
+
+        for (int i = 0; i < text.length(); ++i) {
+            lenOfMatch = helperMatchPref(pattern, prefArr, lenOfMatch, text.charAt(i));
 
             if (lenOfMatch == pattern.length()) {
                 System.out.print((i - pattern.length() + 1) + " ");
-                lenOfMatch = prefiFuncArr[lenOfMatch - 1];
+                lenOfMatch = prefArr[lenOfMatch - 1];
             }
         }
     }
 
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String searchPattern = reader.readLine();
-        String searchText = reader.readLine();
-
-        KMPMatchngAlg(searchPattern, searchText);
+        try {
+            String searchPattern = reader.readLine();
+            String searchText = reader.readLine().trim();
+            KMPMatchngAlg(searchPattern, searchText);
+        } catch (Exception e) {
+            System.out.println("Invalid Input");
+        }
     }
-
 }
