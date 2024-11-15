@@ -3,7 +3,7 @@ import java.util.*;
 class Zoo implements ZooObserver {
     private Map<Integer, Animals> IDAnimalPair = new HashMap<>();
     private Map<Integer, Supervisor> IDSupervisorPair = new HashMap<>();
-    private Map<Supervisor, Set<Animals>> SupervisorAnimalSet = new HashMap<>();
+    private Map<Supervisor, TreeSet<Animals>> SupervisorAnimalSet = new HashMap<>();
     private List<ZooObserver> zooObservers = new ArrayList<>();
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~1.
@@ -19,7 +19,7 @@ class Zoo implements ZooObserver {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~3.
     public void addAnimalToZoo(Animals animal) {
         IDAnimalPair.put(animal.findId(), animal);
-        notifyObservers();
+        notifyObservers("Added a new animal with ID: " + animal.findId());
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~4.
@@ -28,9 +28,22 @@ class Zoo implements ZooObserver {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~4.
+
+
     public void deleteAnimalById(int id) {
-        IDAnimalPair.remove(id);
-        notifyObservers();
+        Animals animalToRemove = IDAnimalPair.get(id);
+        if (animalToRemove != null) {
+            Supervisor supervisor = animalToRemove.findSupervisor();
+            if (supervisor != null) {
+                Set<Animals> supervisorAnimals = SupervisorAnimalSet.get(supervisor);
+                if (supervisorAnimals != null) {
+                    supervisorAnimals.remove(animalToRemove);
+                }
+            }
+
+            IDAnimalPair.remove(id);
+            notifyObservers("Removed animal with ID: " + id);
+        }
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~5.
@@ -42,11 +55,10 @@ class Zoo implements ZooObserver {
                 SupervisorAnimalSet.get(oldSupervisor).remove(ourAnimal);
             }
             ourAnimal.updateSupervisor(supervisor);
-
+            IDSupervisorPair.putIfAbsent(supervisor.findId(), supervisor);
             SupervisorAnimalSet.computeIfAbsent(supervisor, k -> new TreeSet<>()).add(ourAnimal);
-            IDSupervisorPair.put(supervisor.findId(), supervisor);
 
-            notifyObservers();
+            notifyObservers("Supervisor updated");
         }
     }
 
@@ -101,7 +113,7 @@ class Zoo implements ZooObserver {
     public Set<Animals> getAnimalsByType(Class<?> type) {
         Set<Animals> result = new HashSet<>();
         for (Animals animal : IDAnimalPair.values()) {
-            if (animal.getClass().equals(type)) {
+            if (type.isInstance(animal)) {
                 result.add(animal);
             }
         }
@@ -117,20 +129,18 @@ class Zoo implements ZooObserver {
         zooObservers.remove(observer);
     }
 
-    @Override
-    public void notifyObservers() {
+    public void notifyObservers(String changeDescription) {
         for (ZooObserver observer : zooObservers) {
-            observer.update();
+            observer.update(changeDescription);
         }
     }
 
     @Override
-    public void update() {
+    public void update(String changeDescription) {
         System.out.println("Supervisor assignments updated in the zoo.");
     }
 }
 
 interface ZooObserver {
-    void update();
-    void notifyObservers();
+    void update(String changeDescription);
 }
