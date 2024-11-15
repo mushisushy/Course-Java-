@@ -4,19 +4,44 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanInput = new Scanner(System.in);
-
-        int len = scanInput.nextInt();
-        int[] numArray = new int[len];
-        for (int i = 0; i < len; i++) {
-            numArray[i] = scanInput.nextInt();
-        }
-
+        int len = getArrLen(scanInput);
+        if (len == -1) return;
+        int[] numArray = getArrElmnts(scanInput, len);
+        if (numArray == null) return;
         Vector<Integer> NonIncrSubSeq = new Vector<>();
         int[] predTracker = new int[len];
-        int maxLenSS = 0;
-        int lastIdx = -1;
+        int[] lastIdx = new int[1];
+        int maxLenSS = findLongestNonIncreasingSubSeq(numArray, len, NonIncrSubSeq, predTracker, lastIdx);
+        printFinalAns(maxLenSS, predTracker, lastIdx[0]); 
+    }
 
-        for (int i = 0; i < len; i++) {
+    private static int getArrLen(Scanner scanInput) {
+        try {
+            int len = scanInput.nextInt();
+            return len;
+        } catch (Exception e) {
+            System.out.println("Invalid input");
+            return -1;
+        }
+    }
+
+    private static int[] getArrElmnts(Scanner scanInput, int len) {
+        int[] numArray = new int[len];
+        for (int i = 0; i < len; ++i) {
+            try {
+                numArray[i] = scanInput.nextInt();
+            } catch (Exception e) {
+                System.out.println("Invalid input at a position");
+                return null;
+            }
+        }
+        return numArray;
+    }
+
+    private static int findLongestNonIncreasingSubSeq(int[] numArray, int len, Vector<Integer> NonIncrSubSeq, int[] predTracker, int[] lastIdx) {
+        int maxLenSS = 0;
+
+        for (int i = 0; i < len; ++i) {
             int posInSubSeq = posBinarySearch(NonIncrSubSeq, numArray, numArray[i]);
 
             if (posInSubSeq < NonIncrSubSeq.size()) {
@@ -33,21 +58,10 @@ public class Main {
 
             if (posInSubSeq + 1 > maxLenSS) {
                 maxLenSS = posInSubSeq + 1;
-                lastIdx = i;
+                lastIdx[0] = i;
             }
         }
-
-        int[] finalSS = new int[maxLenSS];
-        int currIdx = lastIdx;
-        for (int i = maxLenSS - 1; i >= 0; i--) {
-            finalSS[i] = currIdx + 1;
-            currIdx = predTracker[currIdx];
-        }
-
-        System.out.println(maxLenSS);
-        for (int i = 0; i < maxLenSS; i++) {
-            System.out.print(finalSS[i] + " ");
-        }
+        return maxLenSS;
     }
 
     private static int posBinarySearch(Vector<Integer> NonIncrSubSeq, int[] numArray, int currNum) {
@@ -63,5 +77,19 @@ public class Main {
             }
         }
         return low;
+    }
+
+    private static void printFinalAns(int maxLenSS, int[] predTracker, int lastIdx) {
+        int[] finalSS = new int[maxLenSS];
+        int currIdx = lastIdx;
+        for (int i = maxLenSS - 1; i >= 0; --i) {
+            finalSS[i] = currIdx + 1;
+            currIdx = predTracker[currIdx];
+        }
+
+        System.out.println(maxLenSS);
+        for (int i = 0; i < maxLenSS; ++i) {
+            System.out.print(finalSS[i] + " ");
+        }
     }
 }
