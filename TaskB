@@ -1,0 +1,82 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.Vector;
+
+class Node {
+    int value;
+    Node left, right;
+    public Node(int val) {
+        value = val;
+        left = right = null;
+    }
+}
+
+class NaiveBinaryST {
+    Node insertToTree(Node root, int child) {
+        if (root == null) {
+            return new Node(child);
+        }
+        if (child < root.value) {
+            root.left = insertToTree(root.left, child);
+        } else if (child > root.value) {
+            root.right = insertToTree(root.right, child);
+        }
+        return root;
+    }
+
+    void findLeafNodes(Node root, Vector<Integer> leaves) {
+        if (root == null) return;
+
+        if (root.left == null && root.right == null) {
+            leaves.add(root.value);
+        }
+
+        findLeafNodes(root.left, leaves);
+        findLeafNodes(root.right, leaves);
+    }
+
+    void sortAsc(Vector<Integer> list) {
+        for (int i = 1; i < list.size(); ++i) {
+            int key = list.get(i);
+            int j = i - 1;
+            while (j >= 0 && list.get(j) > key){
+                list.set(j + 1, list.get(j--));
+            }
+            list.set(j + 1, key);
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        NaiveBinaryST bst = new NaiveBinaryST();
+        Node root = buildTree(reader, bst);
+
+        Vector<Integer> leaves = new Vector<>();
+        bst.findLeafNodes(root, leaves);
+        bst.sortAsc(leaves);
+
+        printVector(leaves);
+    }
+
+    static Node buildTree(BufferedReader reader, NaiveBinaryST bst) throws IOException {
+        Node root = null;
+        while (true) {
+            try {
+                for (String numStr : reader.readLine().trim().split(" ")) {
+                    int num = Integer.parseInt(numStr);
+                    if (num == 0) return root;
+                    root = bst.insertToTree(root, num);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Enter integers");
+            }
+        }
+    }
+
+    static void printVector(Vector<Integer> vector) {
+        for (int i = 0; i < vector.size(); ++i) System.out.print(vector.get(i) + " ");
+    }
+}
