@@ -1,0 +1,48 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main {
+
+    private static int helperMatchPref(String pattern, int[] prefArr, int lenOfMatch, char currentChar) {
+        while (lenOfMatch > 0 && pattern.charAt(lenOfMatch) != currentChar) {
+            lenOfMatch = prefArr[lenOfMatch - 1];
+        }
+        if (pattern.charAt(lenOfMatch) == currentChar) {
+            ++lenOfMatch;
+        }
+        return lenOfMatch;
+    }
+
+    public static void KMPMatchngAlg(String pattern, String text) {
+        int[] prefArr = new int[pattern.length()];
+        int lenOfMatch = 0;
+
+        for (int i = 1; i < pattern.length(); ++i) {
+            lenOfMatch = helperMatchPref(pattern, prefArr, lenOfMatch, pattern.charAt(i));
+            prefArr[i] = lenOfMatch;
+        }
+
+        lenOfMatch = 0;
+
+        for (int i = 0; i < text.length(); ++i) {
+            lenOfMatch = helperMatchPref(pattern, prefArr, lenOfMatch, text.charAt(i));
+
+            if (lenOfMatch == pattern.length()) {
+                System.out.print((i - pattern.length() + 1) + " ");
+                lenOfMatch = prefArr[lenOfMatch - 1];
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            String searchPattern = reader.readLine();
+            String searchText = reader.readLine().trim();
+            KMPMatchngAlg(searchPattern, searchText);
+        } catch (Exception e) {
+            System.out.println("Invalid Input");
+        }
+    }
+}
