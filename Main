@@ -1,0 +1,91 @@
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        // Zoo instance with no initial animals
+        Zoo zooNoAnimals = new Zoo();
+
+        // Set of initial animals and add to zoo
+        Set<Animals> initialAnimals = new HashSet<>();
+        initialAnimals.add(new Cat(1, 0.5));
+        initialAnimals.add(new Dog(2, 0.7));
+        initialAnimals.add(new Hippo(3, 1.5));
+        initialAnimals.add(new Horse(4, 1.4));
+        initialAnimals.add(new Fish(5, 0.2));
+
+        Zoo zoo2 = new Zoo(initialAnimals);
+
+        // Add animals to the zoo one by one
+        zooNoAnimals.addAnimalToZoo(new Cat(6, 0.45));
+        zooNoAnimals.addAnimalToZoo(new Dog(7, 0.9));
+
+        // Search for an animal by ID
+        Animals foundAnimal = zoo2.searchAnimalById(1);
+        System.out.println("Found animal with ID 1: " + foundAnimal);
+        System.out.println();
+
+        // Delete an animal by ID
+        zoo2.deleteAnimalById(1);
+        System.out.println("Deleted animal with ID 1. Found: " + zoo2.searchAnimalById(1));
+        System.out.println();
+
+        // Update supervisor of an animal
+        Supervisor supervisor1 = new Supervisor(101, "Matt");
+        Supervisor supervisor2 = new Supervisor(102, "Rachel");
+
+        zoo2.updateSupervisorOfAnimal(2, supervisor1);
+        zoo2.updateSupervisorOfAnimal(3, supervisor1);
+        zoo2.updateSupervisorOfAnimal(4, supervisor2);
+
+        // List animals by supervisor
+        Set<Animals> animalsBySupervisor = zoo2.listOfAnimalsBySupervisor(supervisor1);
+        System.out.println("Animals under Supervisor Matt:");
+        for (Animals animal : animalsBySupervisor) {
+            System.out.println(animal.getClass().getSimpleName());
+        }
+        System.out.println();
+
+        // List animals by supervisor's name
+        Set<Animals> animalsBySupervisorName = zoo2.listOfAnimalsBySupervisorName("Rachel");
+        System.out.println("Animals under Supervisor Rachel:");
+        for (Animals animal : animalsBySupervisorName) {
+            System.out.println(animal.getClass().getSimpleName());
+        }
+        System.out.println();
+
+        // Find animals taller than a certain height
+        Set<Animals> tallAnimals = zoo2.findAnimalsOfHgt(0.6);
+        System.out.println("Animals > 0.6 meters:");
+        for (Animals animal : tallAnimals) {
+            System.out.println(animal.getClass().getSimpleName() + " with height " + animal.findHeight());
+        }
+        System.out.println();
+
+        // Find animals that can make sounds
+        Set<Animals> soundMakingAnimals = zoo2.getAnimalsThatMakeSounds();
+        System.out.println("Animals and sounds:");
+        for (Animals animal : soundMakingAnimals) {
+            animal.makeSound();
+        }
+        System.out.println();
+
+        // Find animals of a specific type
+        Set<Animals> dogs = zoo2.getAnimalsByType(Dog.class);
+        System.out.println("Animals of type Dog:");
+        for (Animals dog : dogs) {
+            System.out.println(dog.getClass().getSimpleName());
+        }
+        System.out.println();
+
+        // Add an observer and simulate a change
+        ZooObserver observer = new ZooObserver() {
+            @Override
+            public void update(String changeDescription) {
+                System.out.println("Observer notified: " + changeDescription);
+            }
+        };
+        zoo2.addObserver(observer);
+        zoo2.addAnimalToZoo(new Horse(8, 1.3));
+        zoo2.deleteAnimalById(2);
+    }
+}

@@ -1,0 +1,146 @@
+import java.util.*;
+
+class Zoo implements ZooObserver {
+    private Map<Integer, Animals> IDAnimalPair = new HashMap<>();
+    private Map<Integer, Supervisor> IDSupervisorPair = new HashMap<>();
+    private Map<Supervisor, TreeSet<Animals>> SupervisorAnimalSet = new HashMap<>();
+    private List<ZooObserver> zooObservers = new ArrayList<>();
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~1.
+    public Zoo() {}
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~2.
+    public Zoo(Set<Animals> initialAnimals) {
+        for (Animals animal : initialAnimals) {
+            addAnimalToZoo(animal);
+        }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~3.
+    public void addAnimalToZoo(Animals animal) {
+        IDAnimalPair.put(animal.findId(), animal);
+        notifyObservers("Added a new animal with ID: " + animal.findId());
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~4.
+    public Animals searchAnimalById(int id) {
+        return IDAnimalPair.get(id);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~4.
+
+
+    public void deleteAnimalById(int id) {
+        Animals animalToRemove = IDAnimalPair.get(id);
+        if (animalToRemove != null) {
+            Supervisor supervisor = animalToRemove.findSupervisor();
+            if (supervisor != null) {
+                Set<Animals> supervisorAnimals = SupervisorAnimalSet.get(supervisor);
+                if (supervisorAnimals != null) {
+                    supervisorAnimals.remove(animalToRemove);
+                }
+            }
+
+            IDAnimalPair.remove(id);
+            notifyObservers("Removed animal with ID: " + id);
+        }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~5.
+    public void updateSupervisorOfAnimal(int animalId, Supervisor supervisor) {
+        Animals ourAnimal = IDAnimalPair.get(animalId);
+        if (ourAnimal != null) {
+            Supervisor oldSupervisor = ourAnimal.findSupervisor();
+            if (oldSupervisor != null) {
+                SupervisorAnimalSet.get(oldSupervisor).remove(ourAnimal);
+            }
+            ourAnimal.updateSupervisor(supervisor);
+            IDSupervisorPair.putIfAbsent(supervisor.findId(), supervisor);
+            SupervisorAnimalSet.computeIfAbsent(supervisor, k -> new TreeSet<>()).add(ourAnimal);
+
+            notifyObservers("Supervisor updated");
+        }
+    }
+
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~6.
+    public Set<Animals> listOfAnimalsBySupervisor(Supervisor supervisor) {
+        if (supervisor == null) {
+            return Collections.emptySet();
+        }
+        Set<Animals> animalSet = SupervisorAnimalSet.get(supervisor);
+        if (animalSet != null) {
+            return animalSet;
+        } else {
+            return Collections.emptySet();
+        }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~7.
+    public Set<Animals> listOfAnimalsBySupervisorName(String name) {
+        Set<Animals> result = new TreeSet<>();
+        for (Supervisor supervisor : SupervisorAnimalSet.keySet()) {
+            if (supervisor.findName().equalsIgnoreCase(name)) {
+                result.addAll(SupervisorAnimalSet.get(supervisor));
+            }
+        }
+        return result;
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~8.
+    public Set<Animals> findAnimalsOfHgt(double minHeight) {
+        Set<Animals> result = new TreeSet<>();
+        for (Animals ourAnimal : IDAnimalPair.values()) {
+            if (ourAnimal.findHeight() > minHeight) {
+                result.add(ourAnimal);
+            }
+        }
+        return result;
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~9.
+    public Set<Animals> getAnimalsThatMakeSounds() {
+        Set<Animals> result = new TreeSet<>();
+        for (Animals ourAnimal : IDAnimalPair.values()) {
+            if (ourAnimal.canMakeSound()) {
+                result.add(ourAnimal);
+            }
+        }
+        return result;
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~10.
+    public Set<Animals> getAnimalsByType(Class<?> type) {
+        Set<Animals> result = new HashSet<>();
+        for (Animals animal : IDAnimalPair.values()) {
+            if (type.isInstance(animal)) {
+                result.add(animal);
+            }
+        }
+        return result;
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~11.
+    public void addObserver(ZooObserver observer) {
+        zooObservers.add(observer);
+    }
+
+    public void removeObserver(ZooObserver observer) {
+        zooObservers.remove(observer);
+    }
+
+    public void notifyObservers(String changeDescription) {
+        for (ZooObserver observer : zooObservers) {
+            observer.update(changeDescription);
+        }
+    }
+
+    @Override
+    public void update(String changeDescription) {
+        System.out.println("Supervisor assignments updated in the zoo.");
+    }
+}
+
+interface ZooObserver {
+    void update(String changeDescription);
+}
