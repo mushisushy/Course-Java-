@@ -9,7 +9,7 @@ public class myApp {
         }
 
         dispatcher.beginOrderAssig();
-        for (int i = 1; i <= 1; i++) {
+        for (int i = 1; i <= 27; i++) {
             dispatcher.placeOrder(new Order("Order-" + i));
         }
     }
